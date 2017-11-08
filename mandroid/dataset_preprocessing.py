@@ -4,6 +4,7 @@ import json
 import os
 import numpy as np
 from scipy.sparse import csr_matrix
+import csv
 
 from sklearn.feature_extraction import DictVectorizer
 
@@ -50,7 +51,7 @@ def preprocess(data, hashes, classify=False):
     return vectorize(data), csr_matrix(y)
 
 
-def load_dataset(dataset_path):
+def load_dataset(dataset_path, malware_file_path, max_samples, percentage_malware=35):
     """
     Loads data from Drebin dataset and stores the information of each file in a
     dictionary with the file data + the pair name: file_name
@@ -58,17 +59,38 @@ def load_dataset(dataset_path):
     :param dataset_path: path of the drebin dataset
     :return: list of dictionaries containing files data.
     """
+
+    n_malware = int(max_samples*(percentage_malware/100))
+    n_goodware = int(max_samples - n_malware)
     data = []
-    hash = []
+    Y = np.zeros(n_malware + n_goodware)
     i=0
+    malware_hash = load_malwares(malware_file_path)
+
+    print("n_mwalware " + str(n_malware) + ", n_goodware " + str(n_goodware))
+
     for file in os.listdir(dataset_path):
-        if i >= 200:
-            break
         # load file data
-        data.append(parse_file(dataset_path, file))
-        hash.append(file)
-        i = i+1
-    return data, hash
+
+        if n_malware + n_goodware > 0:
+            if file in malware_hash:
+                if n_malware > 0:
+                    data.append(parse_file(dataset_path, file))
+                    Y[i] = 1
+                    n_malware -=1
+                    i+=1
+
+            else:
+                if n_goodware > 0:
+                    data.append(parse_file(dataset_path, file))
+                    Y[i] = 0
+                    n_goodware -=1
+                    i+=1
+
+        else:
+
+            break
+    return data, Y
 
 
 def parse_file(dataset_path, file_name):
@@ -152,3 +174,17 @@ def vectorize(data):
     """
     vectorizer = DictVectorizer()
     return vectorizer.fit_transform(data)
+
+
+def load_malwares(malware_file_path):
+
+    malware_hash = {}
+    with open(malware_file_path, newline='') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            malware_hash[row[0]] = True
+
+    return malware_hash
+
+
+#X, Y = load_dataset("C:\\Users\\Valerio\\Downloads\\Machine Learning\\HW\\drebin\\feature_vectors", "C:\\Users\\Valerio\\Downloads\\Machine Learning\\HW\\drebin\\sha256_family.csv", 30)
