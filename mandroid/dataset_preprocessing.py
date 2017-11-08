@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import csv
 import json
 import os
 import numpy as np
@@ -19,6 +18,14 @@ from sklearn.feature_extraction import DictVectorizer
 
 
 def fetch_data(dataset_path, store=False, from_json=False):
+    """
+    Load data from dataset or from saved result stored as JSON file. If store id True
+    the loaded dataset will be stored in a JSON file.
+    :param dataset_path: Position of the dataset folder
+    :param store: set it to True if you want to save the file parsing to JSON file
+    :param from_json: load data from JSON file instead of from original dataset files
+    :return:
+    """
     if from_json:
         with open("drebin_preproc.json", "r") as f:
             data = json.load(f)
@@ -54,15 +61,14 @@ def load_dataset(dataset_path, malware_file_path, max_samples, percentage_malwar
     :param dataset_path: path of the drebin dataset
     :return: list of dictionaries containing files data.
     """
-
     n_malware = int(max_samples*(percentage_malware/100))
     n_goodware = int(max_samples - n_malware)
     data = []
     Y = np.zeros(n_malware + n_goodware)
-    i=0
-    malware_hash = load_malwares(malware_file_path)
+    i = 0
+    malware_hash = load_malware(malware_file_path)
 
-    print("n_mwalware " + str(n_malware) + ", n_goodware " + str(n_goodware))
+    print("n_malware " + str(n_malware) + ", n_goodware " + str(n_goodware))
 
     for file in os.listdir(dataset_path):
         # load file data
@@ -72,37 +78,23 @@ def load_dataset(dataset_path, malware_file_path, max_samples, percentage_malwar
                 if n_malware > 0:
                     data.append(parse_file(dataset_path, file))
                     Y[i] = 1
-                    n_malware -=1
-                    i+=1
+                    n_malware -= 1
+                    i += 1
 
             else:
                 if n_goodware > 0:
                     data.append(parse_file(dataset_path, file))
                     Y[i] = 0
-                    n_goodware -=1
-                    i+=1
-
+                    n_goodware -= 1
+                    i += 1
         else:
-
             break
     return data, Y
 
 
 def parse_file(dataset_path, file_name):
     """
-    Build dictionary with 8 features + name:
-    0 - apk_hash  : SHA1 of the apk file as name
-    1 - req_hw    : requested hardware components
-    2 - req_perm  : requested permissions (eg. contacts access)
-    3 - app_comp  : components, eg. activities, services
-    4 - filt_int  : filtered intents
-    5 - rstr_api  : restricted API calls that require a permission
-    6 - use_perm  : effectively used permissions
-    7 - susp_api  : suspicious API calls
-    8 - use_urls  : used network addresses embedded in the code
-    The first 4 features were taken from the manifest.xml file while the others
-    from the disassembled code.
-
+    Create a dictionary of the form {}
     :param dataset_path: path of dataset
     :param file_name: name of the file in the format of SHA1 of the apk
     :return: dictionary of features.
@@ -111,7 +103,6 @@ def parse_file(dataset_path, file_name):
     with open(dataset_path + "\\" + file_name, "r") as f:
         for line in f:
             file_dict[line.strip()] = True
-            # info = line.strip().split("::")
     return file_dict
 
 
@@ -129,8 +120,14 @@ def vectorize(data):
     return vectorizer.fit_transform(data)
 
 
-def load_malwares(malware_file_path):
-
+def load_malware(malware_file_path):
+    """
+    Load the .csv containing:
+        sha1 of the apk file | malware family
+    :param malware_file_path: path of the malware file
+    :return: dictionary with sha1 of apk as keys and True as values
+            (each sample in the file is a malware)
+    """
     malware_hash = {}
     with open(malware_file_path, newline='') as f:
         reader = csv.reader(f)
