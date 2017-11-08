@@ -220,3 +220,5 @@ TSWLatexianTemp*
 *-tags.tex
 
 .DS_Store
+
+.idea/
