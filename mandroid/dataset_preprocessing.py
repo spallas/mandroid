@@ -93,6 +93,48 @@ def parse_file(dataset_path, file_name):
     file_dict = {}
     with open(dataset_path + "\\" + file_name, "r") as f:
         for line in f:
+            '''if info[0] == "feature":
+                            if "req_hw" in file_dict:
+                                file_dict[info[0]+"req_hw"+info[1]] = True;
+                            else:
+                                file_dict["req_hw"] = [info[1]]
+                        elif info[0] == "permission":
+                            if "req_perm" in file_dict:
+                                file_dict["req_perm"].append(info[1])
+                            else:
+                                file_dict["req_perm"] = [info[1]]
+                        elif (info[0] == "activity"
+                              or info[0] == "service_receiver"
+                              or info[0] == "provider"
+                              or info[0] == "service"):
+                            if "app_comp" in file_dict:
+                                file_dict["app_comp"].append(info[1])
+                            else:
+                                file_dict["app_comp"] = [info[1]]
+                        elif info[0] == "intent":
+                            if "filt_int" in file_dict:
+                                file_dict["filt_int"].append(info[1])
+                            else:
+                                file_dict["filt_int"] = [info[1]]
+                        elif info[0] == "api_call":
+                            if "rstr_api" in file_dict:
+                                file_dict["rstr_api"].append(info[1])
+                            else:
+                                file_dict["rstr_api"] = [info[1]]
+                        elif info[0] == "real_permission":
+                            if "use_perm" in file_dict:
+                                file_dict["use_perm"].append(info[1])
+                            else:
+                                file_dict["use_perm"] = [info[1]]
+                        elif info[0] == "call":
+                            if "susp_api" in file_dict:
+                                file_dict["susp_api"].append(info[1])
+                            else:
+                                file_dict["susp_api"] = [info[1]]
+                        elif info[0] == "url":
+                            if "use_urls" in file_dict:
+                                file_dict["use_urls"].append
+                                '''
             file_dict[line.strip()] = True
             # info = line.strip().split("::")
     return file_dict
