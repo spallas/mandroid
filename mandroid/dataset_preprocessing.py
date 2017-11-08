@@ -138,6 +138,3 @@ def load_malwares(malware_file_path):
             malware_hash[row[0]] = True
 
     return malware_hash
-
-
-#X, Y = load_dataset("C:\\Users\\Valerio\\Downloads\\Machine Learning\\HW\\drebin\\feature_vectors", "C:\\Users\\Valerio\\Downloads\\Machine Learning\\HW\\drebin\\sha256_family.csv", 30)
