@@ -3,6 +3,8 @@
 import json
 import os
 
+from sklearn.feature_extraction import DictVectorizer
+
 """
     This package is responsible of loading the required data and to pre-process
     them before storing them back to JSON format.
@@ -113,3 +115,17 @@ def parse_file(dataset_path, file_name):
                     file_dict["use_urls"] = [info[1]]
 
     return file_dict
+
+
+def vectorize(data):
+    """
+    Converts data collected from dataset to a sparse vector
+    suitable for the SVM primitives.
+
+    :param data: array of dictionaries corresponding to dataset files with values
+                of the type -> "feature=feature_value": True/False
+    :return: a sparse vector composed of a 1 corresponding to present features
+            0 otherwise
+    """
+    vectorizer = DictVectorizer()
+    return vectorizer.fit_transform(data)
