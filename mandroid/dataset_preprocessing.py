@@ -2,6 +2,8 @@
 
 import json
 import os
+import numpy as np
+from scipy.sparse import csr_matrix
 
 from sklearn.feature_extraction import DictVectorizer
 
@@ -19,16 +21,33 @@ def fetch_data(dataset_path, store=False, from_json=False):
         with open("drebin_preproc.json", "r") as f:
             data = json.load(f)
     else:
-        data = load_dataset(dataset_path)
+        data, hashes = load_dataset(dataset_path)
         if store:
             with open("drebin_preproc.json", "w") as f:
                 json.dump(data, f)
 
-    return preprocess(data)
+    return preprocess(data, hashes)
 
 
-def preprocess(data):
-    return ()
+def preprocess(data, hashes, classify=False):
+    """
+    Vectorize data and load labels from Drebin dataset .csv file containing
+    malware hashes with respective
+    :param classify: default = False, if false output data for malware detection
+                    otherwise load information about samples classes
+    :param data: list of samples as extracted from dataset.
+    :param hashes: ashes corresponding to data files.
+    :param classify: default False, preprocess for classification, for detection if false.
+    :return:
+    """
+    if classify:
+        #TODO
+        y = []
+    else:
+        y = np.zeros(len(data), dtype=np.int8)
+        #TODO:
+
+    return vectorize(data), csr_matrix(y)
 
 
 def load_dataset(dataset_path):
@@ -36,7 +55,7 @@ def load_dataset(dataset_path):
     Loads data from Drebin dataset and stores the information of each file in a
     dictionary with the file data + the pair name: file_name
 
-    :param dataset_path: path of the drebin dataset
+    :param dataset_path: path of the Drebin dataset
     :return: list of dictionaries containing files data.
     """
     data = []
