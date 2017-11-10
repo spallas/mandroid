@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
-import json
+
 import os
+import pickle
 import numpy as np
 from scipy.sparse import csr_matrix
 import csv
@@ -17,43 +18,53 @@ from sklearn.feature_extraction import DictVectorizer
 """
 
 
-def fetch_data(dataset_path, store=False, from_json=False):
+def fetch_data(dataset_path, max_samples=1000, malware_percentage=35, store=False, from_store=False):
     """
     Load data from dataset or from saved result stored as JSON file. If store id True
     the loaded dataset will be stored in a JSON file.
     :param dataset_path: Position of the dataset folder
     :param store: set it to True if you want to save the file parsing to JSON file
-    :param from_json: load data from JSON file instead of from original dataset files
+    :param from_store: load data from JSON file instead of from original dataset files
     :return:
     """
-    if from_json:
-        with open("drebin_preproc.json", "r") as f:
-            data = json.load(f)
+    if from_store:
+        with open("drebin_preproc.pkl") as f:
+            data = pickle.load(f)
+            classes = pickle.load(f)
     else:
-        data, hashes = load_dataset(dataset_path)
+        malware_path = dataset_path[:dataset_path.rfind('/')+1] + "sha256_family.csv"
+        data, classes = load_dataset(dataset_path, malware_path, max_samples, malware_percentage)
         if store:
-            with open("drebin_preproc.json", "w") as f:
-                json.dump(data, f)
+            with open("drebin_preproc.pkl", "w") as f:
+                pickle.dump(data, f)
+                pickle.dump(classes, f)
 
-    return preprocess(data, hashes)
+    return preprocess(data, classes)
 
 
-def preprocess(data, y, classify=False):
+def preprocess(data, y, shuffle=False):
     """
     Vectorize data and shuffle rows with corresponding classes.
-    :param data: list of samples as extracted from dataset.
+    Converts data collected from dataset to a sparse vector
+    suitable for the SVM primitives.
+
+    :param data: array of dictionaries corresponding to dataset files with values
+                of the type -> "feature=feature_value": True/False
     :param y: a numpy array containing samples classes
-    :return:
+    :return: a sparse vector composed of a 1 corresponding to present features
+            0 otherwise and TODO
     """
-    toshuffle = np.column_stack((data, y))
-    np.random.shuffle(toshuffle)
-    result = np.hsplit(toshuffle, np.array([1]))
+    if shuffle:
+        to_shuffle = np.column_stack((data, y))
+        np.random.shuffle(to_shuffle)
+        result = np.hsplit(to_shuffle, np.array([1]))
+        data, y = result[0].transpose()[0], result[1].transpose()[0]
 
-    data, y = result[0].transpose()[0], result[1].transpose()[0]
-    return vectorize(data), csr_matrix(y)
+    vectorizer = DictVectorizer()
+    return vectorizer.fit_transform(data), y  # csr_matrix(y)
 
 
-def load_dataset(dataset_path, malware_file_path, max_samples, percentage_malware=35):
+def load_dataset(dataset_path, malware_file_path, max_samples, percentage_malware):
     """
     Loads data from Drebin dataset and stores the information of each file in a
     dictionary with the file data + the pair name: file_name
@@ -72,7 +83,6 @@ def load_dataset(dataset_path, malware_file_path, max_samples, percentage_malwar
 
     for file in os.listdir(dataset_path):
         # load file data
-
         if n_malware + n_goodware > 0:
             if file in malware_hash:
                 if n_malware > 0:
@@ -80,7 +90,6 @@ def load_dataset(dataset_path, malware_file_path, max_samples, percentage_malwar
                     Y[i] = 1
                     n_malware -= 1
                     i += 1
-
             else:
                 if n_goodware > 0:
                     data.append(parse_file(dataset_path, file))
@@ -100,24 +109,10 @@ def parse_file(dataset_path, file_name):
     :return: dictionary of features.
     """
     file_dict = {}
-    with open(dataset_path + "\\" + file_name, "r") as f:
+    with open(dataset_path + '/' + file_name) as f:
         for line in f:
             file_dict[line.strip()] = True
     return file_dict
-
-
-def vectorize(data):
-    """
-    Converts data collected from dataset to a sparse vector
-    suitable for the SVM primitives.
-
-    :param data: array of dictionaries corresponding to dataset files with values
-                of the type -> "feature=feature_value": True/False
-    :return: a sparse vector composed of a 1 corresponding to present features
-            0 otherwise
-    """
-    vectorizer = DictVectorizer()
-    return vectorizer.fit_transform(data)
 
 
 def load_malware(malware_file_path):
