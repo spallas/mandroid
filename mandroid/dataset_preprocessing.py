@@ -1,12 +1,11 @@
 #!/usr/bin/python
 
 
+import csv
 import os
 import pickle
-import numpy as np
-from scipy.sparse import csr_matrix
-import csv
 
+import numpy as np
 from sklearn.feature_extraction import DictVectorizer
 
 """
@@ -22,6 +21,8 @@ def fetch_data(dataset_path, max_samples=1000, malware_percentage=35, store=Fals
     """
     Load data from dataset or from saved result stored as JSON file. If store id True
     the loaded dataset will be stored in a JSON file.
+    :param malware_percentage: Number of samples loaded for training
+    :param max_samples:
     :param dataset_path: Position of the dataset folder
     :param store: set it to True if you want to save the file parsing to JSON file
     :param from_store: load data from JSON file instead of from original dataset files
@@ -34,12 +35,13 @@ def fetch_data(dataset_path, max_samples=1000, malware_percentage=35, store=Fals
     else:
         malware_path = dataset_path[:dataset_path.rfind('/')+1] + "sha256_family.csv"
         data, classes = load_dataset(dataset_path, malware_path, max_samples, malware_percentage)
+        data, classes = preprocess(data, classes)
         if store:
-            with open("drebin_preproc.pkl", "w") as f:
+            with open("drebin_preproc.pkl", "wb") as f:
                 pickle.dump(data, f)
                 pickle.dump(classes, f)
 
-    return preprocess(data, classes)
+    return data, classes
 
 
 def preprocess(data, y, shuffle=False):
@@ -48,6 +50,7 @@ def preprocess(data, y, shuffle=False):
     Converts data collected from dataset to a sparse vector
     suitable for the SVM primitives.
 
+    :param shuffle: Randomly rearrange rows.
     :param data: array of dictionaries corresponding to dataset files with values
                 of the type -> "feature=feature_value": True/False
     :param y: a numpy array containing samples classes
@@ -109,7 +112,7 @@ def parse_file(dataset_path, file_name):
     :return: dictionary of features.
     """
     file_dict = {}
-    with open(dataset_path + '/' + file_name) as f:
+    with open(os.path.join(dataset_path, file_name)) as f:
         for line in f:
             file_dict[line.strip()] = True
     return file_dict
