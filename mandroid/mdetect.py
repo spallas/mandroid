@@ -13,8 +13,8 @@ from sklearn.model_selection import learning_curve
     This module is able to check is a given application is an Android malware.
 """
 
-svm_clf = LinearSVC(random_state=0)
-sgd_clf = SGDClassifier(tol=1e-3, max_iter=1000, alpha=0.00007)
+svm_clf = LinearSVC(tol=1e-4, max_iter=1000, random_state=1)
+sgd_clf = SGDClassifier(tol=1e-4, max_iter=1000, alpha=0.0001, loss='modified_huber')
 nb_clf = GaussianNB()
 neural_net_clf = MLPClassifier()
 

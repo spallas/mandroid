@@ -34,17 +34,21 @@ def main():
     dataset_path = args.dataset_path
     clf_name = args.train
 
-    print("Fetching data from " + dataset_path)
+    if args.fast_load:
+        print("Fetching data from pickle serialization...")
+    else:
+        print("Fetching data from " + dataset_path)
     begin = time.time()
 
-    X, y = fetch_data(dataset_path, max_samples=100000, malware_percentage=5, from_store=True)
+    X, y = fetch_data(dataset_path, max_samples=123000, malware_percentage=5, from_store=args.fast_load, store=True)
     if profiling:
         print("Time for fetching data:\t" + str(time.time() - begin))
         begin = time.time()
     if args.plot:
         cv = ShuffleSplit(n_splits=10, test_size=0.2, random_state=0)
-
         plot_learning_curve(get_clf(clf_name), "Learning curve", X, y, cv=cv)
+        if profiling:
+            print("Time for building learning curve:\t" + str(time.time() - begin))
         plt.show()
 
     X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=1)
@@ -59,6 +63,7 @@ def main():
     Y_predicted = model.predict(X_test)
 
     # Confusion matrix results
+    print("Confusion matrix results on test split consisting of 20% of total data:")
     conf_mat = confusion_matrix(Y_predicted, Y_test, [0, 1])
     print("true negative\tfalse negative")
     print("false positive\ttrue positive")
@@ -68,6 +73,7 @@ def main():
     # K-fold (stratified) cross validation results
     if clf_name == "NBayes":
         X = X.toarray()
+    print("K-fold cross validation results:")
     validation_results = cross_val_score(get_clf(clf_name), X, y, cv=k)
     print(validation_results)
     print("Min/avg/max from K-fold:\t"

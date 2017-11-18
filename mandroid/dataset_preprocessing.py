@@ -21,8 +21,8 @@ def fetch_data(dataset_path, max_samples=1000, malware_percentage=35, store=Fals
     """
     Load data from dataset or from saved result stored as JSON file. If store id True
     the loaded dataset will be stored in a JSON file.
-    :param malware_percentage: Number of samples loaded for training
-    :param max_samples:
+    :param malware_percentage: Number of samples loaded for training. Ignored if from_store=True
+    :param max_samples: Total number of samples. Ignored if from_store=True
     :param dataset_path: Position of the dataset folder
     :param store: set it to True if you want to save the file parsing to JSON file
     :param from_store: load data from JSON file instead of from original dataset files
