@@ -29,7 +29,7 @@ def fetch_data(dataset_path, max_samples=1000, malware_percentage=35, store=Fals
     :return:
     """
     if from_store:
-        with open("drebin_preproc.pkl") as f:
+        with open("drebin_preproc.pkl", "rb") as f:
             data = pickle.load(f)
             classes = pickle.load(f)
     else:
@@ -44,24 +44,18 @@ def fetch_data(dataset_path, max_samples=1000, malware_percentage=35, store=Fals
     return data, classes
 
 
-def preprocess(data, y, shuffle=False):
+def preprocess(data, y):
     """
     Vectorize data and shuffle rows with corresponding classes.
     Converts data collected from dataset to a sparse vector
     suitable for the SVM primitives.
 
-    :param shuffle: Randomly rearrange rows.
     :param data: array of dictionaries corresponding to dataset files with values
                 of the type -> "feature=feature_value": True/False
     :param y: a numpy array containing samples classes
     :return: a sparse vector composed of a 1 corresponding to present features
-            0 otherwise and TODO
+            0 otherwise
     """
-    if shuffle:
-        to_shuffle = np.column_stack((data, y))
-        np.random.shuffle(to_shuffle)
-        result = np.hsplit(to_shuffle, np.array([1]))
-        data, y = result[0].transpose()[0], result[1].transpose()[0]
 
     vectorizer = DictVectorizer()
     return vectorizer.fit_transform(data), y  # csr_matrix(y)
@@ -72,10 +66,13 @@ def load_dataset(dataset_path, malware_file_path, max_samples, percentage_malwar
     Loads data from Drebin dataset and stores the information of each file in a
     dictionary with the file data + the pair name: file_name
 
-    :param dataset_path: path of the drebin dataset
+    :param dataset_path: path of the Drebin dataset
     :return: list of dictionaries containing files data.
     """
     n_malware = int(max_samples*(percentage_malware/100))
+    if n_malware > 5560:
+        # there are only 5560 malware files in the Drebin dataset
+        n_malware = 5560
     n_goodware = int(max_samples - n_malware)
     data = []
     Y = np.zeros(n_malware + n_goodware)
