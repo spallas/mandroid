@@ -18,7 +18,4 @@ optional arguments:
   -f, --fast_load       Load data from saved .pkl file, fails if file not
                         existing
   -k 3-20               Use this K for K-fold cross validation
-
-Process finished with exit code 0
-
 ```
