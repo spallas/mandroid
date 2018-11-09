@@ -20,6 +20,7 @@ from dataset_preprocessing import fetch_data
     This module trains an Android malware binary classifier.
 """
 
+
 def get_clf(name):
     if name == "SVM":
         return LinearSVC(tol=1e-4, max_iter=1000, random_state=1)
@@ -109,18 +110,18 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--train", metavar="CLASSIFIER", type=str, 
-        help="Available classifiers: SVM, SGD (default), NBayes, NeuralNet")
-    parser.add_argument("dataset_path", type=str, 
-        help="Path of the folder containing the Drebin files (w/o  '/')")
-    parser.add_argument("-p", "--measure_time", action="store_true", 
-        help="Print timing info of program steps")
-    parser.add_argument("-plt", "--plot",  action="store_true", 
-        help="Plot learning curve as evaluation technique")
+    parser.add_argument("-t", "--train", metavar="CLASSIFIER", type=str,
+                        help="Available classifiers: SVM, SGD (default), NBayes, NeuralNet")
+    parser.add_argument("dataset_path", type=str,
+                        help="Path of the folder containing the Drebin files (w/o  '/')")
+    parser.add_argument("-p", "--measure_time", action="store_true",
+                        help="Print timing info of program steps")
+    parser.add_argument("-plt", "--plot", action="store_true",
+                        help="Plot learning curve as evaluation technique")
     parser.add_argument("-f", "--fast_load", action="store_true",
-        help="Load data from saved .pkl file, fails if file not existing")
-    parser.add_argument("-k", type=int, default=10, choices=range(4, 20), 
-        help="Use this K for K-fold cross validation")
+                        help="Load data from saved .pkl file, fails if file not existing")
+    parser.add_argument("-k", type=int, default=10, choices=range(4, 20),
+                        help="Use this K for K-fold cross validation")
     args = parser.parse_args()
 
     measure_time = args.measure_time

@@ -23,6 +23,8 @@ def fetch_data(dataset_path, max_samples=1000, malware_percentage=35,
     """
     Load data from dataset or from saved result stored as Pickle file. If store id True
     the loaded dataset will be stored in a Pickle file.
+    :param features_path:
+    :param hashes_path:
     :param malware_percentage: Number of samples loaded for training. Ignored if from_store=True
     :param max_samples: Total number of samples. Ignored if from_store=True
     :param dataset_path: Position of the dataset folder
@@ -32,16 +34,14 @@ def fetch_data(dataset_path, max_samples=1000, malware_percentage=35,
     """
     if from_store:
         with open("drebin_preproc.pkl", "rb") as f:
-            X = pickle.load(f)
-            Y = pickle.load(f)
+            X, Y = pickle.load(f)
     else:
         malware_path = os.path.join(dataset_path, hashes_path)
         feature_vectors_path = os.path.join(dataset_path, features_path)
         X, Y = load_dataset(feature_vectors_path, malware_path, max_samples, malware_percentage)
         if store:
             with open("drebin_preproc.pkl", "wb") as f:
-                pickle.dump(X, f)
-                pickle.dump(Y, f)
+                pickle.dump((X, Y), f)
 
     return X, Y
 
@@ -51,6 +51,9 @@ def load_dataset(dataset_path, malware_file_path, max_samples, percentage_malwar
     Loads data from Drebin dataset and stores the information of each file in a
     dictionary with the file data + the pair name: file_name
 
+    :param percentage_malware:
+    :param max_samples:
+    :param malware_file_path:
     :param dataset_path: path of the Drebin dataset
     :return: list of dictionaries containing files data.
     """
@@ -89,6 +92,7 @@ def load_dataset(dataset_path, malware_file_path, max_samples, percentage_malwar
 def parse_file(dataset_path, file_name, separator="::"):
     """
     Create a dictionary of the form \{ feature_name: string \}
+    :param separator:
     :param dataset_path: path of dataset
     :param file_name: name of the file in the format of SHA1 of the apk
     :return: dictionary of features.
@@ -98,5 +102,5 @@ def parse_file(dataset_path, file_name, separator="::"):
         for line in f:
             if separator in line:
                 feature_name, string = line.strip().split(separator, maxsplit=1)
-                features[feature_name] = string
+                features[feature_name] = features[feature_name] + string if feature_name in features else string
     return features
