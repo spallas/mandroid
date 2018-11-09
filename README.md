@@ -12,8 +12,8 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -t CLASSIFIER,
-  --train CLASSIFIER    Available classifiers: SVM, SGD, (NBayes, NeuralNet deprecated)
-  -p, --profile         Print timing info of program steps
+  --train CLASSIFIER    Available classifiers: SVM, SGD(default), (NBayes, NeuralNet bad results for now...)
+  -p, --measure_time         Print timing info of program steps
   -plt, --plot          Plot learning curve as evaluation technique
   -f, --fast_load       Load data from saved .pkl file, fails if file not
                         existing
