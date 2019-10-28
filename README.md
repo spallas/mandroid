@@ -1,6 +1,30 @@
 # Mandroid
 Automatic Android malware detection and classification using various machine learning techniques.
 
+# Install
+
+Create a virtual environment with Virtualenv
+
+Install Virtualenv with:
+```
+pip3 install virtualenv
+```
+Then create the env and activate with:
+
+```
+virtualenv Mandroid
+source Mandroid/bin/activate
+```
+
+Install requirements:
+
+```
+pip install -r requirements.txt
+```
+
+
+# Usage
+
 ```
 usage: tests.py [-h] [-t CLASSIFIER] [-p] [-plt] [-f]
                 [-k 3-20]
